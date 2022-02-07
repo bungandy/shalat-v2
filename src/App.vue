@@ -1,42 +1,92 @@
 <template>
-  <div class="flex flex-col w-screen">
-    <div class="header flex flex-row">
-      <div>
-        <p>7 Feb, 2022</p>
-        <h1>Shalat.co</h1>
-      </div>
-      <div>
-        <p>Koordinat</p>
-      </div>
+  <div class="flex flex-col w-screen p-5">
+    <div class="header">
+      <div class="text-xs text-slate-400">Senin, 7 Feb 2022</div>
+      <h1 class="font-bold">Shalat.co</h1>
     </div>
     <!-- .header -->
 
-    <div class="next-prayer h-96">
-      <p>Next: Asr</p>
-      <h2>15:27</h2>
-      <p>00:00:00</p>
+    <div class="next-prayer h-60 flex items-center justify-center">
+      <div class="flex flex-col items-center space-y-1">
+        <div class="text-emerald-600">Next: {{nextPrayer.name}}</div>
+        <h2 class="text-7xl">{{nextPrayer.time}}</h2>
+        <div>00:00:00</div>
+      </div>
     </div>
     <!-- .next-prayer -->
 
-    <div class="schedule">
-      <div class="list-prayer">
-        <div class="flex justify-between">
-          <span>Fajr</span>
-          <span>04:39</span>
+    <div class="schedule flex flex-col space-y-5">
+      <div class="current-location flex items-center space-x-2 border border-emerald-600 rounded-xl p-2">
+        <i class="fa-solid fa-location-arrow text-emerald-600"></i>
+        <div>
+          <div class="text-emerald-600">Ciledug</div>
+          <div class="text-xs text-slate-400">Current Location</div>
         </div>
       </div>
+      <div class="list-prayer">
+        <div v-if="!prayers" class="grid gap-y-4">
+          <div v-for="i in 5" :key="i" class="flex justify-between">
+            <div :class="['bg-slate-100 rounded-full h-5 w-1/5', ]"></div>
+            <div class="bg-slate-100 rounded-full h-5 w-1/5"></div>
+          </div>
+        </div>
+        <template v-else>
+          <div v-for="(prayer, key) in prayers" :key="key"
+            :class="['flex items-center justify-between h-10', 
+              {'border-t border-slate-200' : key > 0 },
+              {'bg-emerald-500 text-white -mx-2 px-2 rounded-lg' : key === 3}
+            ]">
+            <span>{{key}}</span>
+            <span>{{prayer}}</span>
+          </div>
+        </template>
+      </div>
     </div>
+    <!-- .schedule -->
 
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
-
 export default {
   name: 'App',
-  components: {
-    HelloWorld
+  data() {
+    return {
+      prayers: null,
+      nextPrayer: {
+        name: 'Asr',
+        time: '15:27'
+      },
+    }
+  },
+  async created() {
+    // get user geolocation
+    navigator.geolocation.getCurrentPosition(
+      position => {
+        console.log(position.coords.latitude);
+        console.log(position.coords.longitude);
+
+        // fetch data
+        const url = 'https://api.pray.zone';
+        fetch(`${url}/v2/times/day.json?latitude=${position.coords.latitude}&longitude=${position.coords.longitude}&elevation=0&date=2022-02-07&key=MagicKey`)
+          .then(response => response.json())
+          .then(data => {
+            console.log(data)
+            this.prayers = data.results.datetime[0].times
+            console.log(this.prayers)
+          });
+          
+      },
+      error => {
+        console.log(error.message);
+      },
+    )
+  },
+  methods: {
+    // getRandomWidth(min, max) {
+    //   const value = [5,10,24,30]
+    //   return `w-${ Math.floor(Math.random() * value ) }`
+    // }
   }
 }
 </script>
