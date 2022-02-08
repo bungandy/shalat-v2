@@ -79,7 +79,7 @@ export default {
     }, 1000)
   },
   async mounted() {
-    // get user geolocation
+    // get user-geolocation
     // navigator.geolocation.getCurrentPosition(
     //   position => {
     //     // console.log(position.coords.latitude);
@@ -112,7 +112,7 @@ export default {
       fetch(`${prayerUrl}/v2/times/day.json?latitude=${latitude}&longitude=${longitude}&elevation=0&date=${today}&key=MagicKey`)
         .then(response => response.json())
         .then(data => {
-          console.log(data)
+          // console.log(data)
           const results = data.results.datetime[0].times
 
           // delete unused times
@@ -145,7 +145,6 @@ export default {
           this.prayers = results
         });
     }
-
   }
 }
 </script>
