@@ -30,7 +30,7 @@
       <div class="current-location flex items-center space-x-2 border border-emerald-600 rounded-xl p-2">
         <i class="fa-solid fa-location-arrow text-emerald-600"></i>
         <div>
-          <div class="text-emerald-600">Ciledug</div>
+          <div class="text-emerald-600">{{currentLocation}}</div>
           <div class="text-xs text-slate-400">Current Location</div>
         </div>
       </div>
@@ -68,7 +68,8 @@ export default {
       localTime: null,
       prayers: null,
       currentPrayer: null,
-      nextPrayer: null
+      nextPrayer: null,
+      currentLocation: null
     }
   },
   async created() {
@@ -79,63 +80,72 @@ export default {
   },
   async mounted() {
     // get user geolocation
-    navigator.geolocation.getCurrentPosition(
-      position => {
-        // console.log(position.coords.latitude);
-        // console.log(position.coords.longitude);
+    // navigator.geolocation.getCurrentPosition(
+    //   position => {
+    //     // console.log(position.coords.latitude);
+    //     // console.log(position.coords.longitude);
+    //     getPrayers(position.coords.latitude, position.coords.longitude)
+    //   },
+    //   error => {
+    //     console.log(error.message);
+    //     getCityFromAPI()
+    //   },
+    // )
 
-        // fetch data
-        const prayerUrl = 'https://api.pray.zone'
-        const today = dayjs().format('YYYY-MM-DD')
+    // get city
+    // const getCityFromAPI = () => {
+      fetch(`https://geolocation-db.com/json/`)
+        .then(response => response.json())
+        .then(data => {
+          console.log(data)
+          this.currentLocation = data.state
 
-        fetch(`${prayerUrl}/v2/times/day.json?latitude=${position.coords.latitude}&longitude=${position.coords.longitude}&elevation=0&date=${today}&key=MagicKey`)
-          .then(response => response.json())
-          .then(data => {
-            const results = data.results.datetime[0].times
+          // get prayers
+          getPrayers(data.latitude, data.longitude)
+        })
+    // }
 
-            // delete unused times
-            delete results['Imsak']
-            delete results['Sunrise']
-            delete results['Sunset']
-            delete results['Midnight']
+    const getPrayers = (latitude,longitude) => {
+      const prayerUrl = 'https://api.pray.zone'
+      const today = dayjs().format('YYYY-MM-DD')
 
-            let isNextPrayer = null
+      fetch(`${prayerUrl}/v2/times/day.json?latitude=${latitude}&longitude=${longitude}&elevation=0&date=${today}&key=MagicKey`)
+        .then(response => response.json())
+        .then(data => {
+          console.log(data)
+          const results = data.results.datetime[0].times
 
-            Object.entries(results).map((item) => {
-              const now = dayjs().format('HHmm')
-              const prayerTime = item[1].split(':').join('')
+          // delete unused times
+          delete results['Imsak']
+          delete results['Sunrise']
+          delete results['Sunset']
+          delete results['Midnight']
 
-              // set current prayer
-              if(now >= prayerTime){
-                this.currentPrayer = item[0]
-              }
+          let isNextPrayer = null
 
-              // set next prayer
-              if(prayerTime >= now && !isNextPrayer){
-                isNextPrayer = { name: item[0], time: item[1] }
-                setTimeout(() => {
-                  this.nextPrayer = isNextPrayer
-                }, 2000)
-              }
-            })
+          Object.entries(results).map((item) => {
+            const now = dayjs().format('HHmm')
+            const prayerTime = item[1].split(':').join('')
 
-            // asign used times value
-            this.prayers = results
-          });
+            // set current prayer
+            if(now >= prayerTime){
+              this.currentPrayer = item[0]
+            }
 
-        // get address by coords
-        const apiKey = 'AIzaSyBsG88vZJKSGWrftZxJu_JoLsTzwmwMtVE'
-        fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${position.coords.latitude},${position.coords.longitude}&key=${apiKey}`)
-          .then(response => response.json())
-          .then(data => {
-            console.log(data)
+            // set next prayer
+            if(prayerTime >= now && !isNextPrayer){
+              isNextPrayer = { name: item[0], time: item[1] }
+              // setTimeout(() => {
+                this.nextPrayer = isNextPrayer
+              // }, 2000)
+            }
           })
-          
-      },
-      error => {
-        console.log(error.message);
-      },
-    )
+
+          // asign used times value
+          this.prayers = results
+        });
+    }
+
   }
 }
 </script>
