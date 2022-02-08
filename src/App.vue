@@ -1,7 +1,9 @@
 <template>
   <div class="flex flex-col w-screen p-5">
     <div class="header">
-      <div class="text-xs text-slate-400">Senin, 7 Feb 2022</div>
+      <div v-if="!localTime" class="bg-slate-100 rounded-full h-4 w-40"/>
+      <div v-else class="text-xs text-slate-400">{{localTime}}</div>
+
       <h1 class="font-bold">Shalat.co</h1>
     </div>
     <!-- .header -->
@@ -48,10 +50,13 @@
 </template>
 
 <script>
+import dayjs from "dayjs"
+
 export default {
   name: 'App',
   data() {
     return {
+      localTime: null,
       prayers: null,
       nextPrayer: {
         name: 'Asr',
@@ -59,22 +64,49 @@ export default {
       },
     }
   },
+  computed: {
+    isNow: () => {
+      
+    }
+  },
   async created() {
+    // get local time
+    setInterval(() => {
+      this.localTime = dayjs().format('MMMM D, YYYY - hh:mm:ss')
+    }, 1000)
+    
     // get user geolocation
     navigator.geolocation.getCurrentPosition(
       position => {
-        console.log(position.coords.latitude);
-        console.log(position.coords.longitude);
+        // console.log(position.coords.latitude);
+        // console.log(position.coords.longitude);
 
         // fetch data
-        const url = 'https://api.pray.zone';
-        fetch(`${url}/v2/times/day.json?latitude=${position.coords.latitude}&longitude=${position.coords.longitude}&elevation=0&date=2022-02-07&key=MagicKey`)
+        const prayerUrl = 'https://api.pray.zone'
+        const today = dayjs().format('YYYY-MM-DD')
+
+        fetch(`${prayerUrl}/v2/times/day.json?latitude=${position.coords.latitude}&longitude=${position.coords.longitude}&elevation=0&date=${today}&key=MagicKey`)
+          .then(response => response.json())
+          .then(data => {
+            const results = data.results.datetime[0].times
+
+            // delete unused times
+            delete results['Imsak']
+            delete results['Sunrise']
+            delete results['Sunset']
+            delete results['Midnight']
+
+            // assign value from formated data
+            this.prayers = results
+          });
+
+        // get address by coords
+        const apiKey = 'AIzaSyBsG88vZJKSGWrftZxJu_JoLsTzwmwMtVE'
+        fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${position.coords.latitude},${position.coords.longitude}&key=${apiKey}`)
           .then(response => response.json())
           .then(data => {
             console.log(data)
-            this.prayers = data.results.datetime[0].times
-            console.log(this.prayers)
-          });
+          })
           
       },
       error => {
@@ -82,11 +114,5 @@ export default {
       },
     )
   },
-  methods: {
-    // getRandomWidth(min, max) {
-    //   const value = [5,10,24,30]
-    //   return `w-${ Math.floor(Math.random() * value ) }`
-    // }
-  }
 }
 </script>
