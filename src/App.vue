@@ -34,12 +34,12 @@
         </div>
         <template v-else>
           <div v-for="(prayer, key) in prayers" :key="key"
-            :class="['flex items-center justify-between h-10', 
-              {'border-t border-slate-200' : key > 0 },
-              {'bg-emerald-500 text-white -mx-2 px-2 rounded-lg' : key === 3}
+            :class="['flex items-center justify-between h-10',
+              {'border-t border-slate-200' : key !== 'Fajr'},
+              {'bg-emerald-500 text-white -mx-2 px-2 rounded-lg border-t-0 font-bold' : key === currentPrayer},
             ]">
             <span>{{key}}</span>
-            <span>{{prayer.time}}</span>
+            <span>{{prayer}}</span>
           </div>
         </template>
       </div>
@@ -58,21 +58,17 @@ export default {
     return {
       localTime: null,
       prayers: null,
+      currentPrayer: null,
       nextPrayer: {
         name: 'Asr',
         time: '15:27'
       },
     }
   },
-  computed: {
-    isNow: () => {
-      
-    }
-  },
   async created() {
     // get local time
     setInterval(() => {
-      this.localTime = dayjs().format('MMMM D, YYYY - hh:mm:ss')
+      this.localTime = dayjs().format('MMMM D, YYYY - HH:mm:ss')
     }, 1000)
   },
   async mounted() {
@@ -95,31 +91,33 @@ export default {
             delete results['Imsak']
             delete results['Sunrise']
             delete results['Sunset']
-            delete results['Midnight']            
+            delete results['Midnight']
 
-            Object.entries(results).map((key, index, value) => {
-              key[0] = {time: key[1], isNow: null}
 
-              // const isItNow = dayjs().isSameOrBefore(dayjs(results[key[1]], 'hour'))
-              // console.log(isItNow)
+            let isFound = null
 
-              // console.log(dayjs.extend(isSameOrBefore))
-              // const isItNow = dayjs().isSameOrBefore(key[1], 'hour')
+            Object.entries(results).map((key) => {
+              const now = dayjs().format('HHmm')
+              const prayerTime = key[1].split(':').join('')
 
+              // set current prayer
+              if (now > prayerTime){
+                isFound = key[0]
+                this.currentPrayer = isFound
+              }
             })
 
-            // assign value from formated data
+            // asign used times value
             this.prayers = results
-            console.log(this.prayers)
           });
 
         // get address by coords
-        // const apiKey = 'AIzaSyBsG88vZJKSGWrftZxJu_JoLsTzwmwMtVE'
-        // fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${position.coords.latitude},${position.coords.longitude}&key=${apiKey}`)
-        //   .then(response => response.json())
-        //   .then(data => {
-        //     console.log(data)
-        //   })
+        const apiKey = 'AIzaSyBsG88vZJKSGWrftZxJu_JoLsTzwmwMtVE'
+        fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${position.coords.latitude},${position.coords.longitude}&key=${apiKey}`)
+          .then(response => response.json())
+          .then(data => {
+            console.log(data)
+          })
           
       },
       error => {
@@ -127,5 +125,11 @@ export default {
       },
     )
   },
+  methods: {
+    checkTime: (time) => {
+      
+      return time
+    }
+  }
 }
 </script>
