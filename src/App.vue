@@ -10,9 +10,18 @@
 
     <div class="next-prayer h-60 flex items-center justify-center">
       <div class="flex flex-col items-center space-y-1">
-        <div class="text-emerald-600">Next: {{nextPrayer.name}}</div>
-        <h2 class="text-7xl">{{nextPrayer.time}}</h2>
-        <div>00:00:00</div>
+        <div class="text-emerald-600">
+          <div v-if="!nextPrayer" class="bg-slate-100 rounded-full h-4 w-40" />
+          <template v-else>Next: {{nextPrayer.name}}</template>
+        </div>
+        <h2 class="text-7xl">
+          <div v-if="!nextPrayer" class="bg-slate-100 rounded-full h-14 w-40 my-3" />
+          <template v-else>{{nextPrayer.time}}</template>
+        </h2>
+        <!-- <div class="text-slate-400">
+          <div v-if="!nextPrayer" class="bg-slate-100 rounded-full h-4 w-40" />
+          <template v-else>00:00</template>
+        </div> -->
       </div>
     </div>
     <!-- .next-prayer -->
@@ -59,10 +68,7 @@ export default {
       localTime: null,
       prayers: null,
       currentPrayer: null,
-      nextPrayer: {
-        name: 'Asr',
-        time: '15:27'
-      },
+      nextPrayer: null
     }
   },
   async created() {
@@ -93,17 +99,23 @@ export default {
             delete results['Sunset']
             delete results['Midnight']
 
+            let isNextPrayer = null
 
-            let isFound = null
-
-            Object.entries(results).map((key) => {
+            Object.entries(results).map((item) => {
               const now = dayjs().format('HHmm')
-              const prayerTime = key[1].split(':').join('')
+              const prayerTime = item[1].split(':').join('')
 
               // set current prayer
-              if (now > prayerTime){
-                isFound = key[0]
-                this.currentPrayer = isFound
+              if(now >= prayerTime){
+                this.currentPrayer = item[0]
+              }
+
+              // set next prayer
+              if(prayerTime >= now && !isNextPrayer){
+                isNextPrayer = { name: item[0], time: item[1] }
+                setTimeout(() => {
+                  this.nextPrayer = isNextPrayer
+                }, 2000)
               }
             })
 
@@ -124,12 +136,6 @@ export default {
         console.log(error.message);
       },
     )
-  },
-  methods: {
-    checkTime: (time) => {
-      
-      return time
-    }
   }
 }
 </script>
