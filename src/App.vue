@@ -39,7 +39,7 @@
               {'bg-emerald-500 text-white -mx-2 px-2 rounded-lg' : key === 3}
             ]">
             <span>{{key}}</span>
-            <span>{{prayer}}</span>
+            <span>{{prayer.time}}</span>
           </div>
         </template>
       </div>
@@ -74,7 +74,8 @@ export default {
     setInterval(() => {
       this.localTime = dayjs().format('MMMM D, YYYY - hh:mm:ss')
     }, 1000)
-    
+  },
+  async mounted() {
     // get user geolocation
     navigator.geolocation.getCurrentPosition(
       position => {
@@ -94,19 +95,31 @@ export default {
             delete results['Imsak']
             delete results['Sunrise']
             delete results['Sunset']
-            delete results['Midnight']
+            delete results['Midnight']            
+
+            Object.entries(results).map((key, index, value) => {
+              key[0] = {time: key[1], isNow: null}
+
+              // const isItNow = dayjs().isSameOrBefore(dayjs(results[key[1]], 'hour'))
+              // console.log(isItNow)
+
+              // console.log(dayjs.extend(isSameOrBefore))
+              // const isItNow = dayjs().isSameOrBefore(key[1], 'hour')
+
+            })
 
             // assign value from formated data
             this.prayers = results
+            console.log(this.prayers)
           });
 
         // get address by coords
-        const apiKey = 'AIzaSyBsG88vZJKSGWrftZxJu_JoLsTzwmwMtVE'
-        fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${position.coords.latitude},${position.coords.longitude}&key=${apiKey}`)
-          .then(response => response.json())
-          .then(data => {
-            console.log(data)
-          })
+        // const apiKey = 'AIzaSyBsG88vZJKSGWrftZxJu_JoLsTzwmwMtVE'
+        // fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${position.coords.latitude},${position.coords.longitude}&key=${apiKey}`)
+        //   .then(response => response.json())
+        //   .then(data => {
+        //     console.log(data)
+        //   })
           
       },
       error => {
