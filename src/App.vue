@@ -12,7 +12,7 @@
       <div class="flex flex-col items-center space-y-1">
         <div class="text-emerald-600">
           <div v-if="!nextPrayer" class="bg-slate-100 rounded-full h-4 w-40" />
-          <template v-else>Next: {{nextPrayer.name}}</template>
+          <template v-else>{{nextPrayer.name}}</template>
         </div>
         <h2 class="text-7xl">
           <div v-if="!nextPrayer" class="bg-slate-100 rounded-full h-14 w-40 my-3" />
@@ -59,7 +59,7 @@
               {'bg-emerald-500 text-white -mx-2 px-2 rounded-lg border-t-0 font-bold' : key === currentPrayer },
 
               // text muted for passed prayer
-              {'text-slate-400' : prayer.split(':').join() < nowTime && key !== currentPrayer }
+              {'text-slate-400' : prayer.split(':').join() < nowTime }
             ]">
             <span>{{key}}</span>
             <span>{{prayer}}</span>
@@ -83,9 +83,7 @@ export default {
       prayers: null,
       currentPrayer: null,
       nextPrayer: null,
-      currentLocation: null,
-      lastPrayer: null,
-      nextFajr: null
+      currentLocation: null
     }
   },
   computed: {
@@ -98,13 +96,6 @@ export default {
     setInterval(() => {
       this.localTime = dayjs().format('MMMM D, YYYY - HH:mm:ss')
     }, 1000)
-
-    const now = dayjs().format('HHmm')
-    const nextDay = dayjs().add(1, 'day').format('YYYY-MM-DD')
-    // console.info(now, nextDay)
-    // if(now > this.lastPrayer){
-    //   this.getPrayers(nextDay)
-    // }
   },
   async mounted() {
     // [default] get user location by API
@@ -166,44 +157,63 @@ export default {
       fetch(`${prayerUrl}/v2/times/day.json?latitude=${latitude}&longitude=${longitude}&elevation=0&date=${date}&key=MagicKey`)
         .then(response => response.json())
         .then(data => {
-          // console.log(data)          
+          // console.log(data)        
+          
+          const sunrise = data.results.datetime[0].times['Sunrise'].split(':').join('')
+          const dhuhr = data.results.datetime[0].times['Dhuhr'].split(':').join('')
+          const midnight = data.results.datetime[0].times['Midnight'].split(':').join('')
+          
           const results = data.results.datetime[0].times
-          const sunrise = results['Sunrise']
-          
-          // set last prayers today
-          this.lastPrayer = results['Midnight']
-          
+
           // delete unused times
           delete results['Imsak']
-          // delete results['Sunrise']
+          delete results['Sunrise']
           delete results['Sunset']
-          // delete results['Midnight']
+          delete results['Midnight']
 
+          // set next prayer
           let isNextPrayer = null
 
+          
+          const now = dayjs().format('HHmm')
+          // const now = '2330'
+
+          // manipulate prayer
           Object.entries(results).map((item) => {
-            const now = dayjs().format('HHmm')
-            // const now = '1205'
+            
             const prayerTime = item[1].split(':').join('')
 
             // set current prayer
-            if( (now >= prayerTime && now > sunrise) || (now >= prayerTime) ){
+            if( now >= prayerTime ){
               this.currentPrayer = item[0]
-              console.log(this.currentPrayer)
+              if( now > sunrise && now < dhuhr ){
+                this.currentPrayer = null
+              }
             }
 
             // set next prayer
-            if(prayerTime >= now && !isNextPrayer){
-              isNextPrayer = { name: item[0], time: item[1] }
-              // setTimeout(() => {
-                this.nextPrayer = isNextPrayer
-              // }, 2000)
+            if(prayerTime >= now && !this.nextPrayer){
+              isNextPrayer = { name: `Next: ${item[0]}`, time: item[1] }
+              this.nextPrayer = isNextPrayer
             }
           })
 
+          // next prayer is tomorrow fajr
+          if(now >= midnight){
+            const tomorrow = dayjs().add(1, 'day').format('YYYY-MM-DD')
+            // console.log(tomorrow)
+            fetch(`${prayerUrl}/v2/times/day.json?latitude=${latitude}&longitude=${longitude}&elevation=0&date=${tomorrow}&key=MagicKey`)
+              .then(response => response.json())
+              .then(data => {
+                const results = data.results.datetime[0].times
+                this.nextPrayer = {name: 'Tomorrow: Fajr', time: results['Fajr'] }
+              })
+          }
+
           // asign used times value
           this.prayers = results
-          console.info(`getPrayers(${date}, ${latitude}, ${longitude}, ${note})`)
+          // console.log(this.nextPrayer)
+          console.warn(`getPrayers(${date}, ${latitude}, ${longitude}, ${note})`)
         });
     }
   }
