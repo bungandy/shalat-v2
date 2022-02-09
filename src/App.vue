@@ -35,7 +35,7 @@
         </div>
         <div v-else>
           <div class="text-emerald-600">{{currentLocation}}</div>
-          <div class="text-xs text-slate-400">Current Location</div>
+          <div class="text-xs text-slate-400">Current Location <button @click.prevent="getLocationByBrowser">Get my location</button></div>
         </div>
       </div>
       <div class="list-prayer">
@@ -50,6 +50,7 @@
             :class="['flex items-center justify-between h-10',
               {'border-t border-slate-200' : key !== 'Fajr'},
               {'bg-emerald-500 text-white -mx-2 px-2 rounded-lg border-t-0 font-bold' : key === currentPrayer },
+              {'text-slate-400' : prayer.split(':').join() < nowTime }
             ]">
             <span>{{key}}</span>
             <span>{{prayer}}</span>
@@ -76,6 +77,11 @@ export default {
       currentLocation: null,
     }
   },
+  computed: {
+    nowTime: () => {
+      return dayjs().format('HHmm')
+    }
+  },
   async created() {
     // get local time
     setInterval(() => {
@@ -83,33 +89,39 @@ export default {
     }, 1000)
   },
   async mounted() {
+    // [default] get user location by API
+    fetch(`https://geolocation-db.com/json/`)
+      .then(response => response.json())
+      .then(data => {
+        // console.log(data)
+        this.currentLocation = `${data.state}, ${data.country_name}`
+
+        // if this have city, use it
+        if(data.city){
+          this.currentLocation = `${data.city}, ${data.country_name}`
+        }
+
+        // get prayers
+        this.getPrayers(data.latitude, data.longitude)
+      })
+  },
+  methods: {
     // get user-geolocation
-    // navigator.geolocation.getCurrentPosition(
-    //   position => {
-    //     // console.log(position.coords.latitude);
-    //     // console.log(position.coords.longitude);
-    //     getPrayers(position.coords.latitude, position.coords.longitude)
-    //   },
-    //   error => {
-    //     console.log(error.message);
-    //     getCityFromAPI()
-    //   },
-    // )
+    getLocationByBrowser() {
+      navigator.geolocation.getCurrentPosition(
+        position => {
+          // console.log(position.coords.latitude);
+          // console.log(position.coords.longitude);
+          getPrayers(position.coords.latitude, position.coords.longitude)
+        },
+        error => {
+          console.log(error.message);
+        },
+      )
+    },
 
-    // get city
-    // const getCityFromAPI = () => {
-      fetch(`https://geolocation-db.com/json/`)
-        .then(response => response.json())
-        .then(data => {
-          console.log(data)
-          this.currentLocation = data.state
-
-          // get prayers
-          getPrayers(data.latitude, data.longitude)
-        })
-    // }
-
-    const getPrayers = (latitude,longitude) => {
+    // get prayers time
+    getPrayers(latitude,longitude) {
       const prayerUrl = 'https://api.pray.zone'
       const today = dayjs().format('YYYY-MM-DD')
 
@@ -119,7 +131,6 @@ export default {
           // console.log(data)          
           const results = data.results.datetime[0].times
           const fajrEnd = results['Sunrise']
-          console.info(fajrEnd)
           
           // delete unused times
           delete results['Imsak']
