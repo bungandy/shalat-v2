@@ -8,7 +8,7 @@
     </div>
     <!-- .header -->
 
-    <div class="next-prayer h-60 flex items-center justify-center">
+    <div class="next-prayer h-56 flex items-center justify-center">
       <div class="flex flex-col items-center space-y-1">
         <div class="text-emerald-600">
           <div v-if="!nextPrayer" class="bg-slate-100 rounded-full h-4 w-40" />
@@ -55,7 +55,7 @@
               {'bg-emerald-500 text-white -mx-2 px-2 rounded-lg border-t-0 font-bold' : key === currentPrayer },
               {'text-slate-400' : prayer.split(':').join() < nowTime }
             ]">
-            <span class="text-lg">{{key}}</span>
+            <span>{{key}}</span>
             <span>{{prayer}}</span>
           </div>
         </template>
