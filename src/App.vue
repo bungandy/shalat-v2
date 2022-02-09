@@ -75,6 +75,8 @@ export default {
       currentPrayer: null,
       nextPrayer: null,
       currentLocation: null,
+      lastPrayer: null,
+      nextFajr: null
     }
   },
   computed: {
@@ -86,6 +88,12 @@ export default {
     // get local time
     setInterval(() => {
       this.localTime = dayjs().format('MMMM D, YYYY - HH:mm:ss')
+
+      // const now = dayjs().format('HHmm')
+      // const nextDay = dayjs().format('YYYY-MM-DD')
+      // if(now > this.lastPrayer){
+      //   this.getPrayers()
+      // }
     }, 1000)
   },
   async mounted() {
@@ -102,7 +110,8 @@ export default {
         }
 
         // get prayers
-        this.getPrayers(data.latitude, data.longitude)
+        const today = dayjs().format('YYYY-MM-DD')
+        this.getPrayers(today, data.latitude, data.longitude)
       })
   },
   methods: {
@@ -112,7 +121,8 @@ export default {
         position => {
           // console.log(position.coords.latitude);
           // console.log(position.coords.longitude);
-          getPrayers(position.coords.latitude, position.coords.longitude)
+          const today = dayjs().format('YYYY-MM-DD')
+          getPrayers(today, position.coords.latitude, position.coords.longitude)
         },
         error => {
           console.log(error.message);
@@ -121,22 +131,24 @@ export default {
     },
 
     // get prayers time
-    getPrayers(latitude,longitude) {
+    getPrayers(date,latitude,longitude) {
       const prayerUrl = 'https://api.pray.zone'
-      const today = dayjs().format('YYYY-MM-DD')
 
-      fetch(`${prayerUrl}/v2/times/day.json?latitude=${latitude}&longitude=${longitude}&elevation=0&date=${today}&key=MagicKey`)
+      fetch(`${prayerUrl}/v2/times/day.json?latitude=${latitude}&longitude=${longitude}&elevation=0&date=${date}&key=MagicKey`)
         .then(response => response.json())
         .then(data => {
           // console.log(data)          
           const results = data.results.datetime[0].times
           const fajrEnd = results['Sunrise']
           
+          // set last prayers today
+          this.lastPrayer = results['Midnight']
+          
           // delete unused times
           delete results['Imsak']
           delete results['Sunrise']
           delete results['Sunset']
-          delete results['Midnight']
+          // delete results['Midnight']
 
           let isNextPrayer = null
 
