@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col w-screen p-5">
+  <div class="flex flex-col w-screen max-w-screen-sm py-5 px-5 sm:px-0">
     <div class="header">
       <div v-if="!localTime" class="bg-slate-100 rounded-full h-4 w-40"/>
       <div v-else class="text-xs text-slate-400">{{localTime}}</div>
@@ -29,7 +29,11 @@
     <div class="schedule flex flex-col space-y-5">
       <div class="current-location flex items-center space-x-2 border border-emerald-600 rounded-xl p-2">
         <i class="fa-solid fa-location-arrow text-emerald-600"></i>
-        <div>
+        <div v-if="!currentLocation">
+          <div class="bg-slate-100 rounded-full h-5 w-40 mb-2 mt-1" />
+          <div class="bg-slate-100 rounded-full h-3 w-40" />
+        </div>
+        <div v-else>
           <div class="text-emerald-600">{{currentLocation}}</div>
           <div class="text-xs text-slate-400">Current Location</div>
         </div>
@@ -45,7 +49,7 @@
           <div v-for="(prayer, key) in prayers" :key="key"
             :class="['flex items-center justify-between h-10',
               {'border-t border-slate-200' : key !== 'Fajr'},
-              {'bg-emerald-500 text-white -mx-2 px-2 rounded-lg border-t-0 font-bold' : key === currentPrayer},
+              {'bg-emerald-500 text-white -mx-2 px-2 rounded-lg border-t-0 font-bold' : key === currentPrayer },
             ]">
             <span>{{key}}</span>
             <span>{{prayer}}</span>
@@ -69,7 +73,7 @@ export default {
       prayers: null,
       currentPrayer: null,
       nextPrayer: null,
-      currentLocation: null
+      currentLocation: null,
     }
   },
   async created() {
@@ -112,9 +116,11 @@ export default {
       fetch(`${prayerUrl}/v2/times/day.json?latitude=${latitude}&longitude=${longitude}&elevation=0&date=${today}&key=MagicKey`)
         .then(response => response.json())
         .then(data => {
-          // console.log(data)
+          // console.log(data)          
           const results = data.results.datetime[0].times
-
+          const fajrEnd = results['Sunrise']
+          console.info(fajrEnd)
+          
           // delete unused times
           delete results['Imsak']
           delete results['Sunrise']
@@ -128,7 +134,7 @@ export default {
             const prayerTime = item[1].split(':').join('')
 
             // set current prayer
-            if(now >= prayerTime){
+            if(now >= prayerTime && now < fajrEnd){
               this.currentPrayer = item[0]
             }
 
