@@ -51,9 +51,15 @@
         <template v-else>
           <div v-for="(prayer, key) in prayers" :key="key"
             :class="['flex items-center justify-between h-11',
+
+              // hide border top for Fajr
               {'border-t border-slate-200' : key !== 'Fajr'},
+
+              // highlight for current prayer
               {'bg-emerald-500 text-white -mx-2 px-2 rounded-lg border-t-0 font-bold' : key === currentPrayer },
-              {'text-slate-400' : prayer.split(':').join() < nowTime }
+
+              // text muted for passed prayer
+              {'text-slate-400' : prayer.split(':').join() < nowTime && key !== currentPrayer }
             ]">
             <span>{{key}}</span>
             <span>{{prayer}}</span>
@@ -162,14 +168,14 @@ export default {
         .then(data => {
           // console.log(data)          
           const results = data.results.datetime[0].times
-          const fajrEnd = results['Sunrise']
+          const sunrise = results['Sunrise']
           
           // set last prayers today
           this.lastPrayer = results['Midnight']
           
           // delete unused times
           delete results['Imsak']
-          delete results['Sunrise']
+          // delete results['Sunrise']
           delete results['Sunset']
           // delete results['Midnight']
 
@@ -177,11 +183,13 @@ export default {
 
           Object.entries(results).map((item) => {
             const now = dayjs().format('HHmm')
+            // const now = '1205'
             const prayerTime = item[1].split(':').join('')
 
             // set current prayer
-            if(now >= prayerTime && now < fajrEnd){
+            if( (now >= prayerTime && now > sunrise) || (now >= prayerTime) ){
               this.currentPrayer = item[0]
+              console.log(this.currentPrayer)
             }
 
             // set next prayer
