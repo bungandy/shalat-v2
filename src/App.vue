@@ -44,8 +44,8 @@
       <div class="list-prayer">
         <div v-if="!prayers" class="grid gap-y-4">
           <div v-for="i in 5" :key="i" class="flex justify-between">
-            <div :class="['bg-slate-100 rounded-full h-5 w-1/5', ]"></div>
-            <div class="bg-slate-100 rounded-full h-5 w-1/5"></div>
+            <div :class="['bg-slate-100 rounded-full h-7 w-1/5', ]"></div>
+            <div class="bg-slate-100 rounded-full h-7 w-1/5"></div>
           </div>
         </div>
         <template v-else>
