@@ -29,7 +29,7 @@
     <div class="schedule flex flex-col space-y-5">
       <div class="current-location flex items-center space-x-2 border border-emerald-600 rounded-xl p-2">
         <i class="fa-solid fa-location-arrow text-emerald-600"></i>
-        <div v-if="!currentLocation">
+        <div v-if="!currentLocation.name">
           <div class="bg-slate-100 rounded-full h-5 w-40 mb-2 mt-1" />
           <div class="bg-slate-100 rounded-full h-3 w-40" />
         </div>
@@ -83,7 +83,10 @@ export default {
       prayers: null,
       currentPrayer: null,
       nextPrayer: null,
-      currentLocation: null
+      currentLocation: {
+        name: null,
+        time: null
+      }
     }
   },
   computed: {
@@ -212,7 +215,8 @@ export default {
 
           // asign used times value
           this.prayers = results
-          // console.log(this.nextPrayer)
+
+          // console the getPrayers triggered by
           console.warn(`getPrayers(${date}, ${latitude}, ${longitude}, ${note})`)
         });
     }
