@@ -34,10 +34,13 @@
           <div class="bg-slate-100 rounded-full h-3 w-40" />
         </div>
         <div v-else>
-          <div class="text-emerald-600">{{currentLocation}}</div>
-          <div class="text-xs text-slate-400">Current Location <button @click.prevent="getLocationByBrowser">Get my location</button></div>
+          <div class="text-emerald-600">{{currentLocation.name}}</div>
+          <div class="text-xs text-slate-400">Current Location</div>
         </div>
       </div>
+      
+      <button @click.prevent="getLocationByBrowser" class="underline text-xs text-slate-400">Refresh location</button>
+
       <div class="list-prayer">
         <div v-if="!prayers" class="grid gap-y-4">
           <div v-for="i in 5" :key="i" class="flex justify-between">
@@ -47,12 +50,12 @@
         </div>
         <template v-else>
           <div v-for="(prayer, key) in prayers" :key="key"
-            :class="['flex items-center justify-between h-10',
+            :class="['flex items-center justify-between h-11',
               {'border-t border-slate-200' : key !== 'Fajr'},
               {'bg-emerald-500 text-white -mx-2 px-2 rounded-lg border-t-0 font-bold' : key === currentPrayer },
               {'text-slate-400' : prayer.split(':').join() < nowTime }
             ]">
-            <span>{{key}}</span>
+            <span class="text-lg">{{key}}</span>
             <span>{{prayer}}</span>
           </div>
         </template>
@@ -88,30 +91,39 @@ export default {
     // get local time
     setInterval(() => {
       this.localTime = dayjs().format('MMMM D, YYYY - HH:mm:ss')
-
-      // const now = dayjs().format('HHmm')
-      // const nextDay = dayjs().format('YYYY-MM-DD')
-      // if(now > this.lastPrayer){
-      //   this.getPrayers()
-      // }
     }, 1000)
+
+    const now = dayjs().format('HHmm')
+    const nextDay = dayjs().add(1, 'day').format('YYYY-MM-DD')
+    // console.info(now, nextDay)
+    // if(now > this.lastPrayer){
+    //   this.getPrayers(nextDay)
+    // }
   },
   async mounted() {
     // [default] get user location by API
     fetch(`https://geolocation-db.com/json/`)
       .then(response => response.json())
       .then(data => {
-        // console.log(data)
-        this.currentLocation = `${data.state}, ${data.country_name}`
+        console.log(data)
+        this.currentLocation = {
+          name: `${data.state}, ${data.country_name}`,
+          latitude: data.latitude,
+          longitude: data.longitude
+        }
 
         // if this have city, use it
         if(data.city){
-          this.currentLocation = `${data.city}, ${data.country_name}`
+          this.currentLocation = {
+            name: `${data.city}, ${data.country_name}`,
+            latitude: data.latitude,
+            longitude: data.longitude
+          }
         }
 
         // get prayers
         const today = dayjs().format('YYYY-MM-DD')
-        this.getPrayers(today, data.latitude, data.longitude)
+        this.getPrayers(today, data.latitude, data.longitude, 'geolocation-db')
       })
   },
   methods: {
@@ -122,7 +134,18 @@ export default {
           // console.log(position.coords.latitude);
           // console.log(position.coords.longitude);
           const today = dayjs().format('YYYY-MM-DD')
-          getPrayers(today, position.coords.latitude, position.coords.longitude)
+          this.currentLocation.latitude = position.coords.latitude
+          this.currentLocation.longitude = position.coords.longitude
+          this.getPrayers(today, position.coords.latitude,  position.coords.longitude, 'browser-geolocation')
+
+          // get address by coords
+          const apiKey = 'AIzaSyBk5sVeOpwEfu7b2woJagsFpze0wG1jMZM'
+          fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${position.coords.latitude},${position.coords.longitude}&key=${apiKey}`)
+            .then(response => response.json())
+            .then(data => {
+              console.log(data)
+            })
+
         },
         error => {
           console.log(error.message);
@@ -131,7 +154,7 @@ export default {
     },
 
     // get prayers time
-    getPrayers(date,latitude,longitude) {
+    getPrayers(date, latitude, longitude, note) {
       const prayerUrl = 'https://api.pray.zone'
 
       fetch(`${prayerUrl}/v2/times/day.json?latitude=${latitude}&longitude=${longitude}&elevation=0&date=${date}&key=MagicKey`)
@@ -172,6 +195,7 @@ export default {
 
           // asign used times value
           this.prayers = results
+          console.info(`getPrayers(${date}, ${latitude}, ${longitude}, ${note})`)
         });
     }
   }
