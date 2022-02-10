@@ -59,7 +59,7 @@
               {'bg-emerald-500 text-white -mx-2 px-2 rounded-lg border-t-0 font-bold' : key === currentPrayer },
 
               // text muted for passed prayer
-              {'text-slate-400' : prayer.split(':').join() < nowTime }
+              {'text-slate-400' : nowTime > prayer.split(':').join() }
             ]">
             <span>{{key}}</span>
             <span>{{prayer}}</span>
@@ -92,6 +92,7 @@ export default {
   computed: {
     nowTime: () => {
       return dayjs().format('HHmm')
+      // return '2000'
     }
   },
   async created() {
@@ -106,20 +107,9 @@ export default {
       .then(response => response.json())
       .then(data => {
         // console.log(data)
-        this.currentLocation = {
-          name: `${data.state}, ${data.country_name}`,
-          latitude: data.latitude,
-          longitude: data.longitude
-        }
 
-        // if this have city, use it
-        if(data.city){
-          this.currentLocation = {
-            name: `${data.city}, ${data.country_name}`,
-            latitude: data.latitude,
-            longitude: data.longitude
-          }
-        }
+        // change display city name
+        this.changeCityName(data.country_name, data.state, data.city)
 
         // get prayers
         const today = dayjs().format('YYYY-MM-DD')
@@ -139,11 +129,19 @@ export default {
           this.getPrayers(today, position.coords.latitude,  position.coords.longitude, 'browser-geolocation')
 
           // get address by coords
-          const apiKey = import.meta.env.VITE_GOOGLE_API_KEY
-          fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${position.coords.latitude},${position.coords.longitude}&key=${apiKey}`)
+          // const apiKey = import.meta.env.VITE_GOOGLE_API_KEY
+          // fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${position.coords.latitude},${position.coords.longitude}&key=${apiKey}`)
+          
+          const apiKey = import.meta.env.VITE_LOCATIONIQ_API_KEY
+          fetch(`https://us1.locationiq.com/v1/reverse.php?key=${apiKey}&lat=${position.coords.latitude}&lon=${position.coords.longitude}&format=json`)
             .then(response => response.json())
             .then(data => {
-              console.log(data)
+              // console.log(data)
+
+              // change display city name
+              const address = data.address
+              this.changeCityName(address.country, address.city, address.city_district)
+
             })
 
         },
@@ -160,11 +158,12 @@ export default {
       fetch(`${prayerUrl}/v2/times/day.json?latitude=${latitude}&longitude=${longitude}&elevation=0&date=${date}&key=MagicKey`)
         .then(response => response.json())
         .then(data => {
-          // console.log(data)        
+          console.log(data)    
           
           const sunrise = data.results.datetime[0].times['Sunrise'].split(':').join('')
           const dhuhr = data.results.datetime[0].times['Dhuhr'].split(':').join('')
           const midnight = data.results.datetime[0].times['Midnight'].split(':').join('')
+          const isha = data.results.datetime[0].times['Isha'].split(':').join('')
           
           const results = data.results.datetime[0].times
 
@@ -176,10 +175,11 @@ export default {
 
           // set next prayer
           let isNextPrayer = null
+          this.nextPrayer = null
 
           
           const now = dayjs().format('HHmm')
-          // const now = '2330'
+          // const now = '2000'
 
           // manipulate prayer
           Object.entries(results).map((item) => {
@@ -202,9 +202,8 @@ export default {
           })
 
           // next prayer is tomorrow fajr
-          if(now >= midnight){
+          if(now >= isha){
             const tomorrow = dayjs().add(1, 'day').format('YYYY-MM-DD')
-            // console.log(tomorrow)
             fetch(`${prayerUrl}/v2/times/day.json?latitude=${latitude}&longitude=${longitude}&elevation=0&date=${tomorrow}&key=MagicKey`)
               .then(response => response.json())
               .then(data => {
@@ -219,6 +218,23 @@ export default {
           // console the getPrayers triggered by
           console.warn(`getPrayers(${date}, ${latitude}, ${longitude}, ${note})`)
         });
+    },
+
+    // change display city name
+    changeCityName(country, state, city) {
+      let displayCity = country
+        
+      // if have state
+      if(state)
+        displayCity = `${state}, ${country}`
+      
+
+      // if this have city, use it
+      if(city)
+        displayCity = `${city}, ${state}`
+
+      // change display city name
+      this.currentLocation.name = displayCity
     }
   }
 }
