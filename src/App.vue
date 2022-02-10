@@ -39,7 +39,14 @@
         </div>
       </div>
       
-      <button @click.prevent="getLocationByDevice" class="underline text-xs text-slate-400 h-9">Refresh location</button>
+      <button @click.prevent="getLocationByDevice" class="underline text-xs text-slate-400 h-9">
+        <template v-if="isLoading">
+          <i class="fa-solid fa-loader fa-spin fa-2x"></i>
+        </template>
+        <template v-else>
+          Refresh location
+        </template>
+      </button>
 
       <div class="list-prayer">
         <div v-if="!prayers" class="grid gap-y-4">
@@ -86,7 +93,8 @@ export default {
       currentLocation: {
         name: null,
         time: null
-      }
+      },
+      isLoading: false
     }
   },
   computed: {
@@ -125,9 +133,12 @@ export default {
         })
     },
 
-
     // get user-geolocation
     getLocationByDevice() {
+      // set loading
+      this.isLoading = true
+
+      // get user location
       navigator.geolocation.getCurrentPosition(
         position => {
           // console.log(position.coords.latitude);
@@ -135,8 +146,7 @@ export default {
           const today = dayjs().format('YYYY-MM-DD')
           this.currentLocation.latitude = position.coords.latitude
           this.currentLocation.longitude = position.coords.longitude
-          this.getPrayers(today, position.coords.latitude,  position.coords.longitude, 'browser-geolocation')
-
+        
           // get address by coords
           const apiKey = import.meta.env.VITE_LOCATIONIQ_API_KEY
           fetch(`https://us1.locationiq.com/v1/reverse.php?key=${apiKey}&lat=${position.coords.latitude}&lon=${position.coords.longitude}&format=json`)
@@ -156,6 +166,9 @@ export default {
               this.setLocalStorage("location", locationStorage)
 
             })
+
+          // get prayers
+          this.getPrayers(today, position.coords.latitude,  position.coords.longitude, 'browser-geolocation')
 
         },
         error => {
@@ -227,6 +240,9 @@ export default {
 
           // asign used times value
           this.prayers = results
+
+          // set loading
+          this.isLoading = false
 
           // console the getPrayers triggered by
           console.warn(`getPrayers(${date}, ${latitude}, ${longitude}, ${note})`)
