@@ -39,7 +39,7 @@
         </div>
       </div>
       
-      <button @click.prevent="getLocationByBrowser" class="underline text-xs text-slate-400">Refresh location</button>
+      <button @click.prevent="getLocationByDevice" class="underline text-xs text-slate-400">Refresh location</button>
 
       <div class="list-prayer">
         <div v-if="!prayers" class="grid gap-y-4">
@@ -102,23 +102,32 @@ export default {
     }, 1000)
   },
   async mounted() {
-    // [default] get user location by API
-    fetch(`https://geolocation-db.com/json/`)
-      .then(response => response.json())
-      .then(data => {
-        // console.log(data)
-
-        // change display city name
-        this.changeCityName(data.country_name, data.state, data.city)
-
-        // get prayers
-        const today = dayjs().format('YYYY-MM-DD')
-        this.getPrayers(today, data.latitude, data.longitude, 'geolocation-db')
-      })
+    // if geolocation allowed
+    if(localStorage.getItem('location'))
+      this.getLocationByDevice()
+    else
+      this.getLocationByAPI()
   },
   methods: {
+    // get location using api
+    getLocationByAPI() {
+      fetch(`https://geolocation-db.com/json/`)
+        .then(response => response.json())
+        .then(data => {
+          // console.log(data)
+
+          // change display city name
+          this.changeCityName(data.country_name, data.state, data.city)
+
+          // get prayers
+          const today = dayjs().format('YYYY-MM-DD')
+          this.getPrayers(today, data.latitude, data.longitude, 'geolocation-db')
+        })
+    },
+
+
     // get user-geolocation
-    getLocationByBrowser() {
+    getLocationByDevice() {
       navigator.geolocation.getCurrentPosition(
         position => {
           // console.log(position.coords.latitude);
@@ -138,6 +147,13 @@ export default {
               // change display city name
               const address = data.address
               this.changeCityName(address.country, address.city, address.city_district)
+
+              // change local storage
+              const locationStorage = {
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude
+              }
+              this.setLocalStorage("location", locationStorage)
 
             })
 
@@ -232,6 +248,10 @@ export default {
 
       // change display city name
       this.currentLocation.name = displayCity
+    },
+
+    setLocalStorage(key, value){
+      localStorage.setItem(key, JSON.stringify(value))
     }
   }
 }
