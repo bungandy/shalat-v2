@@ -39,7 +39,7 @@
         </div>
       </div>
       
-      <button @click.prevent="getLocationByDevice" class="underline text-xs text-slate-400">Refresh location</button>
+      <button @click.prevent="getLocationByDevice" class="underline text-xs text-slate-400 h-9">Refresh location</button>
 
       <div class="list-prayer">
         <div v-if="!prayers" class="grid gap-y-4">
