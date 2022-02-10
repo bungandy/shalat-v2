@@ -39,7 +39,7 @@
         </div>
       </div>
       
-      <button @click.prevent="getLocationByDevice" class="underline text-xs text-slate-400 h-9">
+      <button @click.prevent="getLocationByDevice" class="underline text-xs text-slate-400 h-9 appearance-none">
         <template v-if="isLoading">
           <i class="fa-solid fa-loader fa-spin fa-2x"></i>
         </template>
