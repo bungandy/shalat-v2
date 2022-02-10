@@ -129,9 +129,6 @@ export default {
           this.getPrayers(today, position.coords.latitude,  position.coords.longitude, 'browser-geolocation')
 
           // get address by coords
-          // const apiKey = import.meta.env.VITE_GOOGLE_API_KEY
-          // fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${position.coords.latitude},${position.coords.longitude}&key=${apiKey}`)
-          
           const apiKey = import.meta.env.VITE_LOCATIONIQ_API_KEY
           fetch(`https://us1.locationiq.com/v1/reverse.php?key=${apiKey}&lat=${position.coords.latitude}&lon=${position.coords.longitude}&format=json`)
             .then(response => response.json())
