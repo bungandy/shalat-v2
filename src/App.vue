@@ -76,6 +76,10 @@
     </div>
     <!-- .schedule -->
 
+    <div>
+      <p class="text-xs text-slate-400">Donate ETH: 0x370af8728cb6C10ccF099335f4738d56269a079A</p>
+    </div>
+
   </div>
 </template>
 
