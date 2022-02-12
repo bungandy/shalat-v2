@@ -3,5 +3,5 @@
 @tailwind utilities;
 
 #app {
-  @apply flex justify-center h-screen;
+  @apply flex justify-center min-h-screen;
 }

@@ -1,93 +1,98 @@
 <template>
-  <div class="flex flex-col w-screen max-w-screen-sm py-5 px-5 sm:px-0">
-    <div class="header">
-      <div v-if="!localTime" class="bg-slate-100 rounded-full h-4 w-40"/>
-      <div v-else class="text-xs text-slate-400">{{localTime}}</div>
+  <div class="flex flex-col justify-between w-screen max-w-screen-sm py-5 px-5 sm:px-0">
+    <div class="flex flex-col space-y-5">
+      <div class="header">
+        <div v-if="!localTime" class="bg-slate-100 rounded-full h-4 w-40"/>
+        <div v-else class="text-xs text-slate-400">{{localTime}}</div>
 
-      <h1 class="font-bold">Shalat.co</h1>
-    </div>
-    <!-- .header -->
-
-    <div class="next-prayer h-56 flex items-center justify-center">
-      <div class="flex flex-col items-center space-y-1">
-        <div class="text-emerald-600">
-          <div v-if="!nextPrayer" class="bg-slate-100 rounded-full h-4 w-40" />
-          <template v-else>{{nextPrayer.name}}</template>
-        </div>
-        <h2 class="text-7xl">
-          <div v-if="!nextPrayer" class="bg-slate-100 rounded-full h-14 w-40 my-3" />
-          <template v-else>{{nextPrayer.time}}</template>
-        </h2>
-        <!-- <div class="text-slate-400">
-          <div v-if="!nextPrayer" class="bg-slate-100 rounded-full h-4 w-40" />
-          <template v-else>00:00</template>
-        </div> -->
+        <h1 class="font-bold">Shalat.co</h1>
       </div>
-    </div>
-    <!-- .next-prayer -->
+      <!-- .header -->
 
-    <div class="schedule flex flex-col space-y-5">
-      <div class="current-location flex items-center space-x-2 border border-emerald-600 rounded-xl p-2">
-        <i class="fa-solid fa-location-arrow text-emerald-600"></i>
-        <div v-if="!currentLocation.name">
-          <div class="bg-slate-100 rounded-full h-5 w-40 mb-2 mt-1" />
-          <div class="bg-slate-100 rounded-full h-3 w-40" />
-        </div>
-        <div v-else>
-          <div class="text-emerald-600">{{currentLocation.name}}</div>
-          <div class="text-xs text-slate-400">Current Location</div>
+      <div class="next-prayer h-56 flex items-center justify-center">
+        <div class="flex flex-col items-center space-y-1">
+          <div class="text-emerald-600">
+            <div v-if="!nextPrayer" class="bg-slate-100 rounded-full h-4 w-40" />
+            <template v-else>{{nextPrayer.name}}</template>
+          </div>
+          <h2 class="text-7xl">
+            <div v-if="!nextPrayer" class="bg-slate-100 rounded-full h-14 w-40 my-3" />
+            <template v-else>{{nextPrayer.time}}</template>
+          </h2>
+          <!-- <div class="text-slate-400">
+            <div v-if="!nextPrayer" class="bg-slate-100 rounded-full h-4 w-40" />
+            <template v-else>00:00</template>
+          </div> -->
         </div>
       </div>
-      
-      <button @click.prevent="getLocationByDevice" class="underline text-xs text-slate-400 h-9 appearance-none">
-        <template v-if="isLoading">
-          <i class="fa-solid fa-loader fa-spin fa-2x"></i>
-        </template>
-        <template v-else>
-          Refresh location
-        </template>
-      </button>
+      <!-- .next-prayer -->
 
-      <div class="list-prayer">
-        <div v-if="!prayers" class="grid gap-y-4">
-          <div v-for="i in 5" :key="i" class="flex justify-between">
-            <div :class="['bg-slate-100 rounded-full h-7 w-1/5', ]"></div>
-            <div class="bg-slate-100 rounded-full h-7 w-1/5"></div>
+      <div class="schedule flex flex-col space-y-5">
+        <div class="current-location flex items-center space-x-2 border border-emerald-600 rounded-xl p-2">
+          <i class="fa-solid fa-location-arrow text-emerald-600"></i>
+          <div v-if="!currentLocation.name">
+            <div class="bg-slate-100 rounded-full h-5 w-40 mb-2 mt-1" />
+            <div class="bg-slate-100 rounded-full h-3 w-40" />
+          </div>
+          <div v-else>
+            <div class="text-emerald-600">{{currentLocation.name}}</div>
+            <div class="text-xs text-slate-400">Current Location</div>
           </div>
         </div>
-        <template v-else>
-          <div v-for="(prayer, key) in prayers" :key="key"
-            :class="['flex items-center justify-between h-11',
+        
+        <button @click.prevent="getLocationByDevice" class="underline text-xs text-slate-400 h-9 appearance-none">
+          <template v-if="isLoading">
+            <i class="fa-solid fa-loader fa-spin fa-2x"></i>
+          </template>
+          <template v-else>
+            Refresh location
+          </template>
+        </button>
 
-              // hide border top for Fajr
-              {'border-t border-slate-200' : key !== 'Fajr'},
-
-              // highlight for current prayer
-              {'bg-emerald-500 text-white -mx-2 px-2 rounded-lg border-t-0 font-bold' : key === currentPrayer },
-
-              // text muted for passed prayer
-              {'text-slate-400' : nowTime > prayer.split(':').join() }
-            ]">
-            <span>{{key}}</span>
-            <span>{{prayer}}</span>
+        <div class="list-prayer mt-0">
+          <div v-if="!prayers" class="grid gap-y-4">
+            <div v-for="i in 5" :key="i" class="flex justify-between">
+              <div :class="['bg-slate-100 rounded-full h-7 w-1/5', ]"></div>
+              <div class="bg-slate-100 rounded-full h-7 w-1/5"></div>
+            </div>
           </div>
-        </template>
-      </div>
-    </div>
-    <!-- .schedule -->
+          <template v-else>
+            <div v-for="(prayer, key) in prayers" :key="key"
+              :class="['flex items-center justify-between h-11',
 
-    <div>
+                // hide border top for Fajr
+                {'border-t border-slate-200' : key !== 'Fajr'},
+
+                // highlight for current prayer
+                {'bg-emerald-500 text-white -mx-2 px-2 rounded-lg border-t-0 font-bold' : key === currentPrayer },
+
+                // text muted for passed prayer
+                {'text-slate-400' : nowTime > prayer.split(':').join() }
+              ]">
+              <span>{{key}}</span>
+              <span>{{prayer}}</span>
+            </div>
+          </template>
+        </div>
+      </div>
+      <!-- .schedule -->
+    </div>
+    
+    <div class="border border-slate-200 rounded text-center p-3">
       <p class="text-xs text-slate-400">Donate ETH: 0x370af8728cb6C10ccF099335f4738d56269a079A</p>
     </div>
-
   </div>
 </template>
 
 <script>
 import dayjs from "dayjs"
+// import VueQrcode from 'vue-qrcode'
 
 export default {
   name: 'App',
+  // components: {
+  //   VueQrcode,
+  // },
   data() {
     return {
       localTime: null,
