@@ -78,17 +78,14 @@
       <!-- .schedule -->
     </div>
     
-    <div @click.prevent="isShowQr = !isShowQr" class="border border-slate-200 rounded p-3">
-      <div class="grid grid-flow-row gap-y-1 text-xs text-slate-400">
-        <div>Donate ETH <i class="fa-solid fa-qrcode"></i></div>
-        <div class="relative">
-          {{ethWallet}} 
-          <div v-show="isShowQr" class="absolute z-10 -top-3 left-1/2 -translate-y-full -translate-x-1/2 bg-white p-2 border border-slate-200 rounded">
-            <QrcodeVue :value="ethWallet" size="250"/>
-            <div class="absolute bg-white bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 h-3 w-3">
-              <span class="absolute top-0 left-0 inline-block h-3 w-3 rotate-45 border border-slate-200 border-l-0 border-t-0"></span>
-            </div>
-          </div>
+    <div @click.prevent="isShowQr = !isShowQr" class="relative border border-slate-200 rounded p-3 cursor-pointer">
+      <p class="text-xs text-slate-400 text-center">Donate ETH <i class="fa-brands fa-ethereum"></i> <span class="font-bold">{{ethWallet}}</span></p>
+      <div v-show="isShowQr" class="absolute z-10 -top-3 left-1/2 -translate-y-full -translate-x-1/2 bg-white px-4 pt-5 pb-3 border border-slate-200 rounded flex flex-col items-center space-y-2">
+        <QrcodeVue :value="`ethereum:${ethWallet}`" size="250"/>
+        <!-- <QrcodeVue :value="ethWallet" size="250"/> -->
+        <div class="text-xs text-slate-400"><i class="fa-solid fa-mobile-screen-button"></i> Scan</div>
+        <div class="absolute bg-white bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 h-3 w-3">
+          <span class="absolute top-0 left-0 inline-block h-3 w-3 rotate-45 border border-slate-200 border-l-0 border-t-0"></span>
         </div>
       </div>
     </div>
@@ -115,7 +112,8 @@ export default {
         time: null
       },
       isLoading: false,
-      ethWallet: '0x370af8728cb6C10ccF099335f4738d56269a079A',
+      ethWallet: '0xB3BeD53b13164a99D71b3Abf9652ED4Eba764b84', // Metamask Andy
+      // ethWallet: '0x370af8728cb6C10ccF099335f4738d56269a079A', // Luno Andy
       isShowQr: false
     }
   },
