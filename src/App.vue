@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col justify-between w-screen max-w-screen-sm py-5 px-5 sm:px-0">
+  <div class="flex flex-col justify-between w-screen max-w-screen-sm py-5 px-5 sm:px-0 space-y-4">
     <div class="flex flex-col space-y-5">
       <div class="header">
         <div v-if="!localTime" class="bg-slate-100 rounded-full h-4 w-40"/>
@@ -9,7 +9,7 @@
       </div>
       <!-- .header -->
 
-      <div class="next-prayer h-56 flex items-center justify-center">
+      <div class="next-prayer h-40 flex items-center justify-center">
         <div class="flex flex-col items-center space-y-1">
           <div class="text-emerald-600">
             <div v-if="!nextPrayer" class="bg-slate-100 rounded-full h-4 w-40" />
@@ -78,21 +78,32 @@
       <!-- .schedule -->
     </div>
     
-    <div class="border border-slate-200 rounded text-center p-3">
-      <p class="text-xs text-slate-400">Donate ETH: 0x370af8728cb6C10ccF099335f4738d56269a079A</p>
+    <div @click.prevent="isShowQr = !isShowQr" class="border border-slate-200 rounded p-3">
+      <div class="grid grid-flow-row gap-y-1 text-xs text-slate-400">
+        <div>Donate ETH <i class="fa-solid fa-qrcode"></i></div>
+        <div class="relative">
+          {{ethWallet}} 
+          <div v-show="isShowQr" class="absolute z-10 -top-3 left-1/2 -translate-y-full -translate-x-1/2 bg-white p-2 border border-slate-200 rounded">
+            <QrcodeVue :value="ethWallet" size="250"/>
+            <div class="absolute bg-white bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 h-3 w-3">
+              <span class="absolute top-0 left-0 inline-block h-3 w-3 rotate-45 border border-slate-200 border-l-0 border-t-0"></span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
 import dayjs from "dayjs"
-// import VueQrcode from 'vue-qrcode'
+import QrcodeVue from 'qrcode.vue'
 
 export default {
   name: 'App',
-  // components: {
-  //   VueQrcode,
-  // },
+  components: {
+    QrcodeVue,
+  },
   data() {
     return {
       localTime: null,
@@ -103,7 +114,9 @@ export default {
         name: null,
         time: null
       },
-      isLoading: false
+      isLoading: false,
+      ethWallet: '0x370af8728cb6C10ccF099335f4738d56269a079A',
+      isShowQr: false
     }
   },
   computed: {
