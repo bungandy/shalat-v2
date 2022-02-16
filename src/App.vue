@@ -11,7 +11,7 @@
 
       <div class="next-prayer h-40 flex items-center justify-center">
         <div class="flex flex-col items-center space-y-1">
-          <div class="text-emerald-600">
+          <div class="text-indigo-700">
             <div v-if="!nextPrayer" class="bg-slate-100 rounded-full h-4 w-40" />
             <template v-else>{{nextPrayer.name}}</template>
           </div>
@@ -28,15 +28,15 @@
       <!-- .next-prayer -->
 
       <div class="schedule flex flex-col space-y-5">
-        <div class="current-location flex items-center space-x-2 border border-emerald-600 rounded-xl p-2">
-          <i class="fa-solid fa-location-arrow text-emerald-600"></i>
+        <div class="current-location flex items-center space-x-2 bg-indigo-50 border border-indigo-700 rounded-xl p-2">
+          <i class="fa-solid fa-location-arrow text-indigo-700"></i>
           <div v-if="!currentLocation.name">
-            <div class="bg-slate-100 rounded-full h-5 w-40 mb-2 mt-1" />
-            <div class="bg-slate-100 rounded-full h-3 w-40" />
+            <div class="bg-indigo-100 rounded-full h-5 w-40 mb-2 mt-1" />
+            <div class="bg-indigo-100 rounded-full h-3 w-40" />
           </div>
           <div v-else>
-            <div class="text-emerald-600">{{currentLocation.name}}</div>
-            <div class="text-xs text-slate-400">Current Location</div>
+            <div class="text-indigo-700">{{currentLocation.name}}</div>
+            <div class="text-xs text-indigo-400">Current Location</div>
           </div>
         </div>
         
@@ -64,13 +64,13 @@
                 {'border-t border-slate-200' : key !== 'Fajr'},
 
                 // highlight for current prayer
-                {'bg-emerald-500 text-white -mx-2 px-2 rounded-lg border-t-0 font-bold' : key === currentPrayer },
+                {'bg-indigo-500 text-white -mx-2 px-2 rounded-lg border-t-0 font-bold' : key === currentPrayer },
 
                 // text muted for passed prayer
                 {'text-slate-400' : nowTime > prayer.split(':').join() }
               ]">
               <span>{{key}}</span>
-              <span>{{prayer}}</span>
+              <span class="font-bold">{{prayer}}</span>
             </div>
           </template>
         </div>
