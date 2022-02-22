@@ -78,14 +78,39 @@
       <!-- .schedule -->
     </div>
     
-    <div @click.prevent="isShowQr = !isShowQr" class="relative border border-slate-200 rounded p-3 cursor-pointer">
-      <p class="text-xs text-slate-400 text-center">Donate ETH <i class="fa-brands fa-ethereum"></i> <span class="font-bold">{{ethWallet}}</span></p>
-      <div v-show="isShowQr" class="absolute z-10 -top-3 left-1/2 -translate-y-full -translate-x-1/2 bg-white px-4 pt-5 pb-3 border border-slate-200 rounded flex flex-col items-center space-y-2">
-        <QrcodeVue :value="`ethereum:${ethWallet}`" size="250"/>
-        <!-- <QrcodeVue :value="ethWallet" size="250"/> -->
-        <div class="text-xs text-slate-400"><i class="fa-solid fa-mobile-screen-button"></i> Scan</div>
-        <div class="absolute bg-white bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 h-3 w-3">
-          <span class="absolute top-0 left-0 inline-block h-3 w-3 rotate-45 border border-slate-200 border-l-0 border-t-0"></span>
+    <div class="relative border border-slate-200 rounded p-3">
+      <div class="text-xs text-slate-400 text-center flex space-x-1">
+        <div>Donate with</div>
+        
+        <div @click.prevent="handleShowQR('eth')" class="relative">
+          <div class="cursor-pointer underline">ETH</div>
+          <div v-show="isShowQrETH" class="absolute z-10 -top-3 left-1/2 -translate-y-full -translate-x-1/2 bg-white px-4 pt-5 pb-3 border border-slate-200 rounded flex flex-col items-center space-y-2">
+            <QrcodeVue :value="`ethereum:${ethWallet}`" size="216"/>
+            <!-- <QrcodeVue :value="ethWallet" size="250"/> -->
+            <div class="text-xs text-slate-400">
+              <i class="fa-solid fa-mobile-screen-button"></i>
+              <a :href="`ethereum:${ethWallet}`" class="underline ml-1">Open in Metamask</a>
+            </div>
+            <div class="absolute bg-white bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 h-3 w-3">
+              <span class="absolute top-0 left-0 inline-block h-3 w-3 rotate-45 border border-slate-200 border-l-0 border-t-0"></span>
+            </div>
+          </div>
+        </div>
+
+       <div>or</div>
+
+        <div @click.prevent="handleShowQR('saweria')" class="relative">
+          <div class="cursor-pointer underline">SAWERIA</div>
+          <div v-show="isShowQrSaweria" class="absolute z-10 -top-3 left-1/2 -translate-y-full -translate-x-1/2 bg-white px-4 pt-5 pb-3 border border-slate-200 rounded flex flex-col items-center space-y-2" style="width:250px">
+            <img src="saweria.png" alt="Saweria" class="block">
+            <div class="text-xs text-slate-400">
+              <i class="fa-solid fa-mobile-screen-button"></i>
+              <a href="https://saweria.com/andyy" class="underline ml-1">Open in browser</a>
+            </div>
+            <div class="absolute bg-white bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 h-3 w-3">
+              <span class="absolute top-0 left-0 inline-block h-3 w-3 rotate-45 border border-slate-200 border-l-0 border-t-0"></span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -114,7 +139,8 @@ export default {
       isLoading: false,
       ethWallet: '0xB3BeD53b13164a99D71b3Abf9652ED4Eba764b84', // Metamask Andy
       // ethWallet: '0x370af8728cb6C10ccF099335f4738d56269a079A', // Luno Andy
-      isShowQr: false
+      isShowQrETH: false,
+      isShowQrSaweria: false,
     }
   },
   computed: {
@@ -288,6 +314,24 @@ export default {
 
     setLocalStorage(key, value){
       localStorage.setItem(key, JSON.stringify(value))
+    },
+    
+    // show qr
+    handleShowQR(mode){
+      this.isShowQrETH = false
+      this.isShowQrSaweria = false
+
+      switch (mode) {
+        case 'eth':
+          this.isShowQrETH = true
+          break;
+        case 'saweria':
+          this.isShowQrSaweria = true
+          break;
+      
+        default:
+          break;
+      }
     }
   }
 }
